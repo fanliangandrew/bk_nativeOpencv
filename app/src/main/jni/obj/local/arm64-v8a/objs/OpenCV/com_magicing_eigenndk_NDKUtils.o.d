@@ -143,7 +143,10 @@ D:\repos\NDKDemos\OpenCV_native\app\src\main\jni/obj/local/arm64-v8a/objs/OpenCV
   D:/repos/NDKDemos/OpenCV_native/app/src/main/jni/native/jni/include\opencv2/videostab/deblurring.hpp \
   D:/repos/NDKDemos/OpenCV_native/app/src/main/jni/native/jni/include\opencv2/videostab/wobble_suppression.hpp \
   D:/repos/NDKDemos/OpenCV_native/app/src/main/jni/native/jni/include\opencv2/videostab/ring_buffer.hpp \
-  D:/Android/tools/android-ndk-r14b/build//../sources/cxx-stl/gnu-libstdc++/4.9/include\stack
+  D:/Android/tools/android-ndk-r14b/build//../sources/cxx-stl/gnu-libstdc++/4.9/include\stack \
+  D:/repos/NDKDemos/OpenCV_native/app/src/main/jni\binary.h \
+  D:/repos/NDKDemos/OpenCV_native/app/src/main/jni\detect_driving.h \
+  D:/Android/tools/android-ndk-r14b/build//../sources/cxx-stl/gnu-libstdc++/4.9/include\iterator
 
 D:/Android/tools/android-ndk-r14b/build//../sources/cxx-stl/gnu-libstdc++/4.9/include\string:
 
@@ -432,3 +435,9 @@ D:/repos/NDKDemos/OpenCV_native/app/src/main/jni/native/jni/include\opencv2/vide
 D:/repos/NDKDemos/OpenCV_native/app/src/main/jni/native/jni/include\opencv2/videostab/ring_buffer.hpp:
 
 D:/Android/tools/android-ndk-r14b/build//../sources/cxx-stl/gnu-libstdc++/4.9/include\stack:
+
+D:/repos/NDKDemos/OpenCV_native/app/src/main/jni\binary.h:
+
+D:/repos/NDKDemos/OpenCV_native/app/src/main/jni\detect_driving.h:
+
+D:/Android/tools/android-ndk-r14b/build//../sources/cxx-stl/gnu-libstdc++/4.9/include\iterator:

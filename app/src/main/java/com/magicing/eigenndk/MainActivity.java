@@ -5,8 +5,16 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.graphics.YuvImage;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -19,18 +27,26 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.TextureView;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.concurrent.LinkedBlockingQueue;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,22 +61,122 @@ public class MainActivity extends AppCompatActivity {
         NDKUtils ndk = new NDKUtils();
 
         //Demo code for test openCV
-//        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(
-//                R.mipmap.pic_test)).getBitmap();
-//        int w = bitmap.getWidth(), h = bitmap.getHeight();
-//        int[] pix = new int[w * h];
-//        bitmap.getPixels(pix, 0, w, 0, 0, w, h);
-//        int [] resultPixes=ndk.gray(pix,w,h);
+        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(
+                R.mipmap.t0)).getBitmap();
+        int w = bitmap.getWidth(), h = bitmap.getHeight();
+        int[] pix = new int[w * h];
+        bitmap.getPixels(pix, 0, w, 0, 0, w, h);
+        int [] resultPixes=ndk.detectDriving(pix,w,h);
+
+//        code for testing android front-page demo picture
 //        Bitmap result = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
 //        result.setPixels(resultPixes, 0, w, 0, 0,w, h);
-//
-//        ImageView img = (ImageView)findViewById(R.id.img2);
-//        img.setImageBitmap(result);
 
-        // Start sett cameras...
+        //开辟线程调用
+//        mframeQueue = new LinkedBlockingQueue<byte []>();
+//        mprocessWithQueue = new ProcessWithQueue(mframeQueue);
+
+
+        int picSize = resultPixes.length-2;
+        int pHeight = resultPixes[picSize],pWidth = resultPixes[picSize+1];
+        int [] tempPixes = new int[picSize];
+        System.arraycopy(resultPixes,0,tempPixes,0,picSize);
+
+        Bitmap result = Bitmap.createBitmap(pWidth,pHeight, Bitmap.Config.RGB_565);
+        result.setPixels(tempPixes, 0, pWidth, 0, 0,pWidth, pHeight);
+
+        ImageView img = (ImageView)findViewById(R.id.imageView);
+        img.setImageBitmap(result);
+
+//        int resultString=ndk.testString(pix,w,h);
+//        TextView txtV = (TextView)findViewById(R.id.textView);
+//        txtV.setText(String.valueOf(resultString));
+
+        //set surface view;
+
+//        msurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+
+
+
+        // Start setting camera...
         TextureView textureView = (TextureView) findViewById(R.id.textureView);
         mTextureView = textureView;
         mTextureView.setSurfaceTextureListener(textureListener);
+
+        mTextureView.post(new Runnable() {
+            @Override
+            public void run() {
+                int tvWidth = mTextureView.getWidth(),tvHeight=mTextureView.getHeight();
+                DrawImageView mDrawIV = (DrawImageView)findViewById(R.id.drawIV);
+                mDrawIV.bringToFront();
+                pointX = tvWidth/2-510;
+                pointY = tvHeight/2-750;
+                mDrawIV.setVal(pointX,pointY);
+                mDrawIV.onDraw(new Canvas());
+            }
+        });
+
+
+    }
+
+    private int pointX;
+    private int pointY;
+
+    private ProcessWithQueue mprocessWithQueue;
+    private LinkedBlockingQueue<byte []> mframeQueue;
+
+    public class ProcessWithQueue extends Thread {
+        private static final String TAG = "Queue processing ...";
+        private LinkedBlockingQueue<byte[]> mQueue;
+
+        public ProcessWithQueue(LinkedBlockingQueue<byte[]> frameQueue) {
+            mQueue = frameQueue;
+            start();
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                byte[] frameData = null;
+                try {
+                    frameData = mQueue.take();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                processFrame(frameData);
+            }
+        }
+
+        private void processFrame(byte[] tmpBytes) {
+            Log.i(TAG, "handling one frame");
+                         NDKUtils ndk = new NDKUtils();
+
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(tmpBytes,0,tmpBytes.length);
+                        Matrix matrix = new Matrix();
+                        matrix.postRotate((float)90.0);
+                        Bitmap rotaBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+
+                        Bitmap bitmap1 = Bitmap.createBitmap(rotaBitmap,0,0,1020,1500);
+
+                        int w = bitmap1.getWidth(), h = bitmap1.getHeight();
+                        int[] pix = new int[w * h];
+                        bitmap1.getPixels(pix, 0, w, 0, 0, w, h);
+                        int [] resultPixes=ndk.detectDriving(pix,w,h);
+
+                        int picSize = resultPixes.length-2;
+                        int pHeight = resultPixes[picSize],pWidth = resultPixes[picSize+1];
+                        int [] tempPixes = new int[picSize];
+                        System.arraycopy(resultPixes,0,tempPixes,0,picSize);
+
+                        Bitmap result = Bitmap.createBitmap(pWidth,pHeight, Bitmap.Config.RGB_565);
+                        result.setPixels(tempPixes, 0, pWidth, 0, 0,pWidth, pHeight);
+
+//                        TextView txtV = (TextView)findViewById(R.id.textView);
+//                        txtV.setText(String.valueOf(picSize)+"  "+String.valueOf(pHeight)+"  "+String.valueOf(pWidth)+"  "+String.valueOf(tempPixes[0]));
+//
+//                        ImageView img = (ImageView)findViewById(R.id.imageView);
+//                        img.setImageBitmap(result);
+        }
     }
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
@@ -170,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         //创建捕获请求
                         CaptureRequest mCaptureRequest = mCaptureRequestBuilder.build();
+
                         CameraCaptureSession mPreviewSession = session;
                         //设置反复捕获数据的请求，这样预览界面就会一直有数据显示
                         mPreviewSession.setRepeatingRequest(mCaptureRequest, mSessionCaptureCallback, null);
@@ -177,7 +294,6 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-
                 @Override
                 public void onConfigureFailed(CameraCaptureSession session) {
 
@@ -201,13 +317,6 @@ public class MainActivity extends AppCompatActivity {
 //            switch (mState) { case STATE_PREVIEW: // NOTHING break; case STATE_WAITING_CAPTURE: int afState = result.get(CaptureResult.CONTROL_AF_STATE); if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState || CaptureResult.CONTROL_AF_STATE_PASSIVE_FOCUSED == afState || CaptureResult.CONTROL_AF_STATE_PASSIVE_UNFOCUSED == afState) { //do something like save picture } break; } }
     };
 
-    //for time control...
-//    SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//    private Date time1;
-//    private Date time2;
-//    private long between = 0;
-//
-    //    private TextView tmpTextView =(TextView) findViewById(R.id.text_View3);
     private void setupImageReader() {
         //前三个参数分别是需要的尺寸和格式，最后一个参数代表每次最多获取几帧数据，本例的2代表ImageReader中最多可以获取两帧图像流
         mImageReader = ImageReader.newInstance(1080, 1920,
@@ -222,13 +331,6 @@ public class MainActivity extends AppCompatActivity {
                 frames++;
                 Image image = null;
                 byte[] tmpBytes;
-//
-//                if((frames % 30) ==0 ){
-//                    //我们可以将这帧数据转成字节数组，类似于Camera1的PreviewCallback回调的预览帧数据
-//                    Log.e("PreviewListener", "GetPreviewImage");
-////                new imageHandle(image);
-////                    initiaTime = SystemClock.elapsedRealtimeNanos();
-//                }
 
                 try {
                     image = reader.acquireLatestImage();
@@ -236,21 +338,44 @@ public class MainActivity extends AppCompatActivity {
                     if (image == null) {
                         return;
                     }
-                    if((frames)%30 ==0) {
-                        Log.e("PreviewListener", "GetPreviewImage"+image. getFormat()+"  "+ImageFormat. YUV_420_888+"  "+ImageFormat. JPEG);
+                    if((frames)% 30 ==0) {
+//                        Log.e("PreviewListener", "GetPreviewImage");
                         tmpBytes = imageToByteArray(image);
 
+//                        try{
+//                            mframeQueue.put(tmpBytes);
+//                        }catch (InterruptedException  e){
+//                            e.printStackTrace();
+//                        }
                         NDKUtils ndk = new NDKUtils();
 
                         Bitmap bitmap = BitmapFactory.decodeByteArray(tmpBytes,0,tmpBytes.length);
-                        int w = bitmap.getWidth(), h = bitmap.getHeight();
-                        int[] pix = new int[w * h];
-                        bitmap.getPixels(pix, 0, w, 0, 0, w, h);
-                        int [] resultPixes=ndk.gray(pix,w,h);
-                        Bitmap result = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
-                        result.setPixels(resultPixes, 0, w, 0, 0,w, h);
+                        Matrix matrix = new Matrix();
+                        matrix.postRotate((float)90.0);
+                        Bitmap rotaBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
 
-                        ImageView img = (ImageView)findViewById(R.id.img2);
+                        Bitmap bitmap1 = Bitmap.createBitmap(rotaBitmap,0,0,1020,1500);
+
+                        int w = bitmap1.getWidth(), h = bitmap1.getHeight();
+                        int[] pix = new int[w * h];
+                        bitmap1.getPixels(pix, 0, w, 0, 0, w, h);
+                        int [] resultPixes=ndk.detectDriving(pix,w,h);
+
+                        int picSize = resultPixes.length-2;
+                        int pHeight = resultPixes[picSize],pWidth = resultPixes[picSize+1];
+                        int [] tempPixes = new int[picSize];
+                        System.arraycopy(resultPixes,0,tempPixes,0,picSize);
+
+                        Bitmap result = Bitmap.createBitmap(pWidth,pHeight, Bitmap.Config.RGB_565);
+                        result.setPixels(tempPixes, 0, pWidth, 0, 0,pWidth, pHeight);
+
+                        TextView txtV = (TextView)findViewById(R.id.textView);
+                        txtV.setText(String.valueOf(picSize)+"  "+String.valueOf(pHeight)+"  "+String.valueOf(pWidth)+"  "+String.valueOf(tempPixes[0]));
+
+//                        Bitmap result = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
+//                        result.setPixels(resultPixes, 0, w, 0, 0,w, h);
+//
+                        ImageView img = (ImageView)findViewById(R.id.imageView);
                         img.setImageBitmap(result);
                     }
                 } finally {

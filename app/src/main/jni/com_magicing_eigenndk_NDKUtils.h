@@ -7,13 +7,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 /*
  * Class:     com_magicing_eigenndk_NDKUtils
- * Method:    invokeCmethod
- * Signature: ()Ljava/lang/String;
+ * Method:    gray
+ * Signature: ([III)[I
  */
-JNIEXPORT jstring JNICALL Java_com_magicing_eigenndk_NDKUtils_invokeCmethod
-  (JNIEnv *, jobject);
+JNIEXPORT jintArray JNICALL Java_com_magicing_eigenndk_NDKUtils_gray
+  (JNIEnv *, jclass, jintArray, jint, jint);
+
+/*
+ * Class:     com_magicing_eigenndk_NDKUtils
+ * Method:    bankcard
+ * Signature: ([III)[I
+ */
+JNIEXPORT jintArray JNICALL Java_com_magicing_eigenndk_NDKUtils_bankcard
+  (JNIEnv *, jclass, jintArray, jint, jint);
 
 #ifdef __cplusplus
 }
