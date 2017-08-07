@@ -18,6 +18,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            jniDebuggable true
+            minifyEnabled false
+        }
     }
 
     sourceSets{
@@ -30,7 +34,7 @@ android {
     task ndkBuild(type: Exec) {
         File workingDir=file('src/main/jni')
         println workingDir.absolutePath
-        commandLine getNdkBuildCmd(),'NDK_PROJECT_PATH='+workingDir.absolutePath,'APP_BUILD_SCRIPT='+workingDir.absolutePath+'/Android.mk','NDK_APPLICATION_MK='+workingDir.absolutePath+'/Application.mk'
+        commandLine getNdkBuildCmd(),'NDK_PROJECT_PATH='+workingDir.absolutePath,'APP_BUILD_SCRIPT='+workingDir.absolutePath+'/Android.mk','NDK_APPLICATION_MK='+workingDir.absolutePath+'/Application.mk','NDK_DEBUG=1'
     }
 
     tasks.withType(JavaCompile) {
@@ -62,10 +66,11 @@ def getNdkBuildCmd() {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:25.1.1'
     testCompile 'junit:junit:4.12'
+    compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
 }

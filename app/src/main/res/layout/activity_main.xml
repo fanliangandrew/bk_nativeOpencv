@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:layout_gravity="bottom"
     tools:context="com.magicing.eigenndk.MainActivity"
     android:weightSum="1">
 
@@ -20,37 +21,44 @@
         <!--android:layout_height="143dp"-->
         <!--android:src="@mipmap/t0"/>-->
 
-    <TextureView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <!--<TextureView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/textureView"-->
+        <!--android:layout_centerInParent="true"-->
+        <!--/>-->
+
+    <com.magicing.eigenndk.AutoFitTextureView
         android:id="@+id/textureView"
-        android:layout_centerInParent="true"
-        />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
 
     <com.magicing.eigenndk.DrawImageView
         android:id="@+id/drawIV"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="653dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
-
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="21dp"
-        android:id="@+id/textView"
-        android:textStyle="bold" />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@mipmap/t0"
         android:id="@+id/imageView"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
+        android:layout_gravity="bottom"
+        />
+
+    <Button
+        android:text="[upload]"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        android:id="@+id/button"
+        android:layout_width="100dp"
+        android:layout_marginLeft="250dp"
+        android:layout_marginBottom="50dp"
+        />
 
     <!--<TextView-->
         <!--android:layout_width="wrap_content"-->
@@ -69,4 +77,4 @@
         <!--android:id="@+id/img2"-->
         <!--android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content"/>-->
-</RelativeLayout>
+</FrameLayout>

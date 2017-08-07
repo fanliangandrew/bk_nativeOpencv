@@ -813,7 +813,7 @@ vector<Rect> searchIdBox(map<int, vector<Point> >& ccm, int c, int r, int w, int
 
 }
 
-void drivingDetector(const Mat& src, Mat& dst) {
+void drivingDetector(const Mat& src, Mat& dst ,vector<Rect>& nameRects, vector<Rect>& idRects, vector<Rect>& typeRects) {
     //CV_Assert(src.data && src.type() == CV_8UC3);
     Mat colorImg, grayImg;
     double f = modifySize(src, colorImg, 800, 800);
@@ -832,9 +832,9 @@ void drivingDetector(const Mat& src, Mat& dst) {
 
     vector<int> threeRs;
     int isDetect = getThreeRows(dotImg, threeRs, 40);
-    if (isDetect == 0 || threeRs.size() < 3) {
+    if (isDetect == 0 || threeRs.size() < 3 ) {
         dst = colorImg;
-        return;
+        return ;
     }
     int baseRow = threeRs[0];
     float interSpace = (threeRs[2]-threeRs[0])/2.0;
@@ -842,9 +842,25 @@ void drivingDetector(const Mat& src, Mat& dst) {
     Rect nameDom(0, cvRound(baseRow-3.1*interSpace), cols/2, cvRound(interSpace*NAMESPACE_EXTEND));
     Rect idDom(cvRound(0.35*cols), cvRound(baseRow-4.1*interSpace), cvRound(0.6*cols), cvRound(interSpace*NAMESPACE_EXTEND));
     Rect typeDom(cvRound(0.4*cols), baseRow+2*interSpace, cvRound(cols/3), cvRound(interSpace*NAMESPACE_EXTEND));
+
+    int segMargin = 2;
+    map<int, vector<Point> > ccm = filterConnectedDomain(labelImg, interSpace/2, interSpace*interSpace, 13.0);
+    nameRects = searchNameBox(ccm, nameDom.x, nameDom.y, nameDom.width, nameDom.height);
+
+    ccm = filterConnectedDomain(labelImg, 1, interSpace*10, 13.0);
+    idRects = searchIdBox(ccm, idDom.x, idDom.y, idDom.width, idDom.height);
+
+    ccm = filterConnectedDomain(labelImg, interSpace/3, interSpace*10, 5.0, dotImg, charImg);
+    typeRects = searchTypeBox(ccm, typeDom.x, typeDom.y, typeDom.width, typeDom.height);
+
+    /* // draw the rects on the img
+    for( int k=0;k<nameRects.size();k++){
+        rectangle(colorImg,nameRects[k],Scalar(0,0,255), 2);
+    }
     rectangle(colorImg, nameDom, Scalar(0,0,255), 2);
     rectangle(colorImg, idDom, Scalar(0,0,255), 2);
     rectangle(colorImg, typeDom, Scalar(0,0,255), 2);
+    */
     dst = colorImg;
 
     return;
